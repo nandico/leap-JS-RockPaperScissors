@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<!------------------------------------------------------------------------------
+| Copyright (C) 2012-2013 Leap Motion, Inc. All rights reserved.               |
+| Leap Motion proprietary and confidential. Not for distribution.              |
+| Use subject to the terms of the Leap Motion SDK Agreement available at       |
+| https://developer.leapmotion.com/sdk_agreement, or another agreement         |
+| between Leap Motion and you, your company or other organization.             |
+------------------------------------------------------------------------------->
+<html>
+<head>
+<title>Rock Paper Scissors Demo</title>
+<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Montserrat:700">
+<link rel="stylesheet" type="text/css" href="main.css">
+<script type="text/javascript" src="LeapHelper.js"></script>
+<script type="text/javascript" src="RockPaperScissors.js"></script>
+<script>
+var ws;
+
+// Support both the WebSocket and MozWebSocket objects
+if ((typeof(WebSocket) == 'undefined') &&
+    (typeof(MozWebSocket) != 'undefined')) {
+  WebSocket = MozWebSocket;
+}
+
+// Create the socket with event handlers
+function init() {
+  //Create and open the socket
+  ws = new WebSocket("ws://localhost:6437/");
+  
+  // On successful connection
+  ws.onopen = function(event) {
+    document.getElementById("main").style.visibility = "visible";
+    document.getElementById("connection").innerHTML = "WebSocket connection open!";
+	
+	// init RPS engine
+	rps.init();
+  };
+  
+  // On message received
+  ws.onmessage = function(event) {
+    var obj = JSON.parse(event.data);
+    
+	var str = JSON.stringify(obj, undefined, 2);
+	
+	// pass the actual frame to the helper
+	if( rps )
+	{
+		rps.lh.setFrame( obj );
+	}
+	/*
+	// debug data
+  	lh.log( 'Hands count', lh.getHandscount() );
+	lh.log( 'Pointable count', lh.getPointablecount() );
+	lh.log( 'Pointable count by hand', JSON.stringify( lh.getPointableCountByHand(), undefined, 2 ) );
+
+    lh.log( 'Raw frame', str );
+	*/
+
+  };
+  
+  // On socket close
+  ws.onclose = function(event) {
+    ws = null;
+    document.getElementById("main").style.visibility = "hidden";
+    document.getElementById("connection").innerHTML = "WebSocket connection closed";
+  }
+  
+  //On socket error
+  ws.onerror = function(event) {
+    alert("Received error");
+  };
+}
+
+rps = new RockPaperScissors();
+
+RockPaperScissors.ANSWER_TIME_OUT = 900;
+RockPaperScissors.NEXTROUND_TIME_OUT = 4000;
+RockPaperScissors.MOVEMENT_CATCH_COUNT = 4;
+
+// forms
+RockPaperScissors.ROCK = 0;
+RockPaperScissors.PAPER = 1;
+RockPaperScissors.SCISSORS = 2;
+
+// State machine controls
+RockPaperScissors.MODE_READY = 0;
+RockPaperScissors.MODE_321 = 1;
+RockPaperScissors.MODE_LISTEN = 2;
+RockPaperScissors.MODE_EVALUATE = 3;
+
+</script>
+</head>
+<body onload="init();">
+<div id="connection" style="display:block;">WebSocket not connected</div>
+<div id="main" style="visibility:hidden">
+  <div id="output"></div>
+</div>
+</body>
+</html>
