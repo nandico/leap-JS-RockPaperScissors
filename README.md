@@ -36,9 +36,3 @@ puts the hand in the wrong time.
 
 To ensure correct detection the system looks for some amount of frames in a stable position before 
 register the movement with a buffer. This improved the entire detection strategy.
-
-Other
------
-
-Contributions are welcome. I will pray for someone creates a graphical interface or improve the system to support 
-rock-paper-scissors-lizard-spock game :)
